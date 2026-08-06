@@ -6,67 +6,7 @@
   <title>Salesforce Embedded Chat</title>
 </head>
 <body>
-  <h1>Salesforce Embedded Chat</h1>
-
   <script type="text/javascript">
-    // Registrar ANTES de init (misma página que el bootstrap)
-    window.addEventListener("onEmbeddedMessagingReady", (event) => {
-      console.log("[Webchat] ready — evento completo:", event);
-    });
-
-    window.addEventListener("onEmbeddedMessageSent", (event) => {
-      console.log("[Webchat] mensaje — evento completo:", event);
-      console.log("[Webchat] mensaje — detail:", event.detail);
-
-      try {
-        const entry = event.detail && event.detail.conversationEntry;
-        if (!entry) return;
-
-        let payload = entry.entryPayload;
-        if (typeof payload === "string") payload = JSON.parse(payload);
-
-        console.log("[Webchat] mensaje — payload:", payload);
-
-        if (payload.abstractMessage && payload.abstractMessage.choices) {
-          postIframeDisable();
-        } else if (payload.abstractMessage && payload.abstractMessage.choicesResponse) {
-          postIframeEnable();
-        }
-      } catch (err) {
-        console.error("[Webchat] error parseando mensaje:", err);
-      }
-    });
-
-    // Solo depuración: quítalo cuando ya veas onEmbeddedMessageSent
-    window.addEventListener("message", (event) => {
-      console.log("[postMessage] evento completo:", event);
-      console.log("[postMessage] data:", event.data);
-
-      const data = event.data;
-      if (!data || typeof data !== "object") return;
-      if (data.method !== "EMBEDDED_MESSAGING_DISPATCH_EVENT_TO_HOST") return;
-
-      console.log("[postMessage] EMBEDDED dispatch:", JSON.stringify(data, null, 2));
-    });
-
-    function postIframeEnable() {
-      const iframe = document.getElementById("embeddedMessagingFrame");
-      if (!iframe || !iframe.contentWindow) {
-        console.warn("[Webchat] iframe no encontrado (enable)");
-        return;
-      }
-      iframe.contentWindow.postMessage("InputEnable", "*");
-    }
-
-    function postIframeDisable() {
-      const iframe = document.getElementById("embeddedMessagingFrame");
-      if (!iframe || !iframe.contentWindow) {
-        console.warn("[Webchat] iframe no encontrado (disable)");
-        return;
-      }
-      iframe.contentWindow.postMessage("InputDisable", "*");
-    }
-
     function initEmbeddedMessaging() {
       try {
         embeddedservice_bootstrap.settings.language = "es";
