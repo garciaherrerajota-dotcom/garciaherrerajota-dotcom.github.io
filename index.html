@@ -119,7 +119,7 @@
         <div class="card">
             <h1>💬 Salesforce Embedded Chat</h1>
             <p>Prueba desde <strong>GitHub Pages</strong> - Deployment: <strong>Github_Webchat</strong></p>
-
+            
             <div>
                 <span class="badge">🌐 Dominio: <span id="current-domain"></span></span>
                 <span class="badge">🔑 Org: 00DS800000DPelu</span>
@@ -146,8 +146,6 @@
                 <code>Github_Webchat</code><br>
                 <code>https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490</code>
             </div>
-        </div>
-
         <div class="card" id="debug-card" style="display: none;">
             <h2>🔍 Diagnóstico detallado</h2>
             <div id="debug-info" class="url-card"></div>
@@ -159,8 +157,10 @@
     </div>
 
     <script>
+        // Mostrar el dominio actual
         const currentOrigin = window.location.origin;
         document.getElementById('current-domain').innerHTML = currentOrigin;
+        document.getElementById('cors-url').innerHTML = currentOrigin;
 
         let initTime = Date.now();
 
@@ -179,7 +179,7 @@
                     } else {
                         updateStatus('⚠️ El chat está inicializado. Si no se abre, verifica que haya agentes disponibles en Omni-Channel.', 'warning');
                     }
-                } catch (e) {
+                } catch(e) {
                     console.error('Error al abrir:', e);
                     updateStatus('❌ Error al abrir: ' + e.message, 'error');
                 }
@@ -190,9 +190,9 @@
 
         function testCORS() {
             updateStatus('🌐 Probando conexión con Salesforce...', 'loading');
-
+            
             const testUrl = 'https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490/assets/js/bootstrap.min.js';
-
+            
             fetch(testUrl, { mode: 'no-cors' })
                 .then(() => {
                     updateStatus('✅ La conexión a Salesforce es posible. Si el chat no aparece, el problema es de disponibilidad de agentes o configuración del deployment.', 'success');
@@ -206,15 +206,14 @@
         function showFullDebug() {
             const debugCard = document.getElementById('debug-card');
             const debugInfo = document.getElementById('debug-info');
-
+            
             const hasBootstrap = typeof embeddedservice_bootstrap !== 'undefined';
-            const isInitialized = hasBootstrap && embeddedservice_bootstrap.isInitialized
-                ? embeddedservice_bootstrap.isInitialized()
-                : false;
-
+            const isInitialized = hasBootstrap && embeddedservice_bootstrap.isInitialized ? 
+                embeddedservice_bootstrap.isInitialized() : false;
+            
             const chatContainer = document.querySelector('#embedded-messaging-container');
-            const chatIframes = document.querySelectorAll('iframe[src*="salesforce"], iframe[src*="ESWGithubWebchat"]');
-
+            const chatIframes = document.querySelectorAll('iframe[src*="salesforce"]');
+            
             let html = '<strong>📊 DIAGNÓSTICO COMPLETO</strong><br><br>';
             html += `🕒 Hora: ${new Date(initTime).toLocaleTimeString()}<br>`;
             html += `🌐 Dominio actual: ${currentOrigin}<br>`;
@@ -223,35 +222,43 @@
             html += `⚙️ Chat inicializado: ${isInitialized ? '✅ SÍ' : '❌ NO'}<br>`;
             html += `🎨 Container DOM: ${chatContainer ? '✅ SÍ' : '❌ NO'}<br>`;
             html += `🖼️ Iframes Salesforce: ${chatIframes.length}<br><br>`;
-
-            if (hasBootstrap && embeddedservice_bootstrap.settings) {
+            
+            if (hasBootstrap) {
                 html += '<strong>🔧 Configuración actual:</strong><br>';
-                html += `Idioma: ${embeddedservice_bootstrap.settings.language || 'no definido'}<br>`;
+                if (embeddedservice_bootstrap.settings) {
+                    html += `Idioma: ${embeddedservice_bootstrap.settings.language || 'no definido'}<br>`;
+                }
             }
-
+            
             html += '<br><strong>💡 Interpretación:</strong><br>';
             if (!hasBootstrap) {
                 html += '❌ El script de Salesforce no se cargó. Verifica la URL del sitio.';
             } else if (!isInitialized) {
                 html += '⚠️ El chat no se inicializó correctamente.';
             } else if (!chatContainer) {
-                html += '⚠️ El chat está inicializado pero no se creó el contenedor.';
+                html += '⚠️ El chat está inicializado pero no se creó el contenedor. Esto suele ocurrir cuando:<br>';
+                html += '• No hay agentes disponibles en Omni-Channel<br>';
+                html += '• El deployment no está publicado<br>';
+                html += '• El dominio no está en Trusted Domains';
             } else {
                 html += '✅ Todo parece correcto. El chat debería funcionar.';
             }
-
+            
             debugInfo.innerHTML = html;
             debugCard.style.display = 'block';
         }
 
+        // Función init con TU NUEVO snippet de Salesforce
         function initEmbeddedMessaging() {
             try {
                 console.log('🚀 Inicializando Embedded Messaging - Deployment: Github_Webchat');
                 updateStatus('🔄 Conectando con Salesforce...', 'loading');
-
+                
                 embeddedservice_bootstrap.settings.language = 'es';
+                // Forzar que el botón sea visible
                 embeddedservice_bootstrap.settings.hideChatButtonOnLoad = false;
-
+                
+                // --- ESTE ES TU NUEVO SNIPPET ---
                 embeddedservice_bootstrap.init(
                     '00DS800000DPelu',
                     'Github_Webchat',
@@ -260,10 +267,11 @@
                         scrt2URL: 'https://zuzenean--pre.sandbox.my.salesforce-scrt.com'
                     }
                 );
-
+                // --- FIN DEL SNIPPET ---
+                
                 console.log('✅ Inicialización completada');
                 updateStatus('✅ Chat inicializado correctamente. Busca el ícono en la esquina inferior derecha o haz clic en "Abrir chat manualmente".', 'success');
-
+                
                 setTimeout(() => {
                     const container = document.querySelector('#embedded-messaging-container');
                     if (container) {
@@ -273,78 +281,19 @@
                         updateStatus('⚠️ Chat inicializado pero no visible. ¿Hay agentes disponibles?', 'warning');
                     }
                 }, 3000);
-
+                
             } catch (err) {
                 console.error('❌ Error:', err);
                 updateStatus('❌ Error: ' + err.message, 'error');
             }
         }
 
-        // --- Bloqueo del input cuando llega la encuesta (choices) ---
-        window.addEventListener('message', function (event) {
-            try {
-                if (
-                    event.data &&
-                    event.data.method === 'EMBEDDED_MESSAGING_DISPATCH_EVENT_TO_HOST' &&
-                    event.data.data &&
-                    event.data.data.eventDetails &&
-                    event.data.data.eventDetails.conversationEntry &&
-                    event.data.data.eventDetails.conversationEntry.entryPayload
-                ) {
-                    const payload = JSON.parse(
-                        event.data.data.eventDetails.conversationEntry.entryPayload
-                    );
-
-                    if (payload.abstractMessage && payload.abstractMessage.choices) {
-                        console.log('[MIAW] choices detectados → InputDisable');
-                        postIframeDisable();
-                    } else if (payload.abstractMessage && payload.abstractMessage.choicesResponse) {
-                        console.log('[MIAW] choicesResponse detectado → InputEnable');
-                        postIframeEnable();
-                    }
-                }
-            } catch (e) {
-                // Ignorar mensajes que no son payload de conversación
-            }
-        });
-
-        function getMessagingIframe() {
-            return (
-                document.getElementById('embeddedMessagingFrame') ||
-                document.querySelector('iframe[name="embeddedMessagingFrame"]') ||
-                document.querySelector('#embedded-messaging-frame') ||
-                document.querySelector('iframe[src*="ESWGithubWebchat"]')
-            );
-        }
-
-        function postIframeDisable() {
-            const iframe = getMessagingIframe();
-            if (!iframe || !iframe.contentWindow) {
-                console.warn('[MIAW] iframe no encontrado para InputDisable');
-                return;
-            }
-            iframe.contentWindow.postMessage('InputDisable', '*');
-        }
-
-        function postIframeEnable() {
-            const iframe = getMessagingIframe();
-            if (!iframe || !iframe.contentWindow) {
-                console.warn('[MIAW] iframe no encontrado para InputEnable');
-                return;
-            }
-            iframe.contentWindow.postMessage('InputEnable', '*');
-        }
-
-        window.addEventListener('error', function (e) {
+        window.addEventListener('error', function(e) {
             console.error('Error global:', e.message);
         });
     </script>
 
-    <script
-        type="text/javascript"
-        src="https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490/assets/js/bootstrap.min.js"
-        onload="initEmbeddedMessaging()"
-        onerror="updateStatus('❌ No se pudo cargar el script de Salesforce.', 'error')">
-    </script>
+    <!-- Script oficial de Salesforce con TU NUEVO deployment -->
+    <script type='text/javascript' src='https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()' onerror="updateStatus('❌ No se pudo cargar el script de Salesforce.', 'error')"></script>
 </body>
 </html>
