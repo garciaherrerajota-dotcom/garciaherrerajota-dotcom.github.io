@@ -134,31 +134,23 @@
   window.addEventListener('onEmbeddedMessagingReady', (event) => {
     console.log('[HOST] ready — evento completo:', event);
   });
-  window.addEventListener('onEmbeddedMessageSent', (event) => {
-    console.log('[HOST] mensaje — evento completo:', event);
-    console.log('[HOST] mensaje — detail:', event.detail);
-    try {
-      const entry = event.detail && event.detail.conversationEntry;
-      if (!entry) return;
-      let payload = entry.entryPayload;
-      if (typeof payload === 'string') payload = JSON.parse(payload);
-      console.log('[HOST] mensaje — payload:', payload);
-      if (payload.abstractMessage && payload.abstractMessage.choices) {
-        console.log('[HOST] choices → InputDisable');
-        postIframeDisable();
-      } else if (payload.abstractMessage && payload.abstractMessage.choicesResponse) {
-        console.log('[HOST] choicesResponse → InputEnable');
-        postIframeEnable();
-      }
-    } catch (err) {
-      console.error('[HOST] error parseando mensaje:', err, event.detail);
-    }
-  });
+window.addEventListener('onEmbeddedMessageSent', (event) => {
+  console.log('[HOST] mensaje:', event.detail);
+  const iframe = document.getElementById('embeddedMessagingFrame');
+  if (iframe && iframe.contentWindow) {
+    iframe.contentWindow.postMessage('CHECK_SATISFACTION_SURVEY', '*');
+  }
+});
   // Debug temporal de postMessage hacia el host
-  window.addEventListener('message', (event) => {
-    console.log('[HOST][postMessage] origin:', event.origin);
-    console.log('[HOST][postMessage] data:', event.data);
-  });
+window.addEventListener('message', (event) => {
+  if (event.origin !== 'https://zuzenean--pre.sandbox.my.site.com') return;
+  if (event.data && event.data.type === 'SATISFACTION_SURVEY_STATE') {
+    console.log('[HOST] encuesta en conversación:', event.data.visible);
+    if (event.data.visible) {
+      // p.ej. postIframeDisable();
+    }
+  }
+});
   function postIframeEnable() {
     const iframe = document.getElementById('embeddedMessagingFrame');
     if (!iframe || !iframe.contentWindow) {
