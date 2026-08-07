@@ -128,28 +128,73 @@
         </div>
 
 
-    <script>
-        function initEmbeddedMessaging() {
-            try {
-                
-                embeddedservice_bootstrap.settings.language = 'es';
+<script>
+  document.getElementById('current-domain').textContent = window.location.origin;
+  // Eventos oficiales del HOST (aquí es donde deben estar)
+  window.addEventListener('onEmbeddedMessagingReady', (event) => {
+    console.log('[HOST] ready — evento completo:', event);
+  });
+  window.addEventListener('onEmbeddedMessageSent', (event) => {
+    console.log('[HOST] mensaje — evento completo:', event);
+    console.log('[HOST] mensaje — detail:', event.detail);
+    try {
+      const entry = event.detail && event.detail.conversationEntry;
+      if (!entry) return;
+      let payload = entry.entryPayload;
+      if (typeof payload === 'string') payload = JSON.parse(payload);
+      console.log('[HOST] mensaje — payload:', payload);
+      if (payload.abstractMessage && payload.abstractMessage.choices) {
+        console.log('[HOST] choices → InputDisable');
+        postIframeDisable();
+      } else if (payload.abstractMessage && payload.abstractMessage.choicesResponse) {
+        console.log('[HOST] choicesResponse → InputEnable');
+        postIframeEnable();
+      }
+    } catch (err) {
+      console.error('[HOST] error parseando mensaje:', err, event.detail);
+    }
+  });
+  // Debug temporal de postMessage hacia el host
+  window.addEventListener('message', (event) => {
+    console.log('[HOST][postMessage] origin:', event.origin);
+    console.log('[HOST][postMessage] data:', event.data);
+  });
+  function postIframeEnable() {
+    const iframe = document.getElementById('embeddedMessagingFrame');
+    if (!iframe || !iframe.contentWindow) {
+      console.warn('[HOST] iframe no encontrado (enable)');
+      return;
+    }
+    iframe.contentWindow.postMessage('InputEnable', '*');
+  }
+  function postIframeDisable() {
+    const iframe = document.getElementById('embeddedMessagingFrame');
+    if (!iframe || !iframe.contentWindow) {
+      console.warn('[HOST] iframe no encontrado (disable)');
+      return;
+    }
+    iframe.contentWindow.postMessage('InputDisable', '*');
+  }
+  function initEmbeddedMessaging() {
+    try {
+      embeddedservice_bootstrap.settings.language = 'es';
+      embeddedservice_bootstrap.init(
+        '00DS800000DPelu',
+        'Github_Webchat',
+        'https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490',
+        { scrt2URL: 'https://zuzenean--pre.sandbox.my.salesforce-scrt.com' }
+      );
+    } catch (err) {
+      console.error('Error loading Embedded Messaging:', err);
+    }
+  }
+</script>
+<script
+  type="text/javascript"
+  src="https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490/assets/js/bootstrap.min.js"
+  onload="initEmbeddedMessaging()">
+</script>
 
-                embeddedservice_bootstrap.init(
-                    '00DS800000DPelu',
-                    'Github_Webchat',
-                    'https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490',
-                    {
-                        scrt2URL: 'https://zuzenean--pre.sandbox.my.salesforce-scrt.com'
-                    }
-                );
-                
-            } catch (err) {
-                console.error('❌ Error:', err);
-            }
-        }
-    </script>
-
-    <!-- Script oficial de Salesforce con TU NUEVO deployment -->
-    <script type='text/javascript' src='https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+        
 </body>
 </html>
