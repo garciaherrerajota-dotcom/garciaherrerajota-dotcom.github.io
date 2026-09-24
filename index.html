@@ -53,22 +53,25 @@
     });
 
     function initEmbeddedMessaging() {
-      try {
-        embeddedservice_bootstrap.settings.language = 'es';
-        embeddedservice_bootstrap.init(
-          '00DS800000DPelu',
-          'Github_Webchat',
-          'https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490',
-          { scrt2URL: 'https://zuzenean--pre.sandbox.my.salesforce-scrt.com' }
-        );
-      } catch (err) {
-        console.error('Error loading Embedded Messaging:', err);
-      }
+  		try {
+  			embeddedservice_bootstrap.settings.language = 'es'; // For example, enter 'en' or 'en-US'
+  
+  			embeddedservice_bootstrap.init(
+  				'00DS800000DPelu',
+  				'Github_Webchat_V2',
+  				'https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1790252925451',
+  				{
+  					scrt2URL: 'https://zuzenean--pre.sandbox.my.salesforce-scrt.com'
+  				}
+  			);
+  		} catch (err) {
+  			console.error('Error loading Embedded Messaging: ', err);
+  		}
     }
   </script>
   <script
     type="text/javascript"
-    src="https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1780489820490/assets/js/bootstrap.min.js"
+    src="https://zuzenean--pre.sandbox.my.site.com/ESWGithubWebchat1790252925451/assets/js/bootstrap.min.js"
     onload="initEmbeddedMessaging()">
   </script>
 </body>
