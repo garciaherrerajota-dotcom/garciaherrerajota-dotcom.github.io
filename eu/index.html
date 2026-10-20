@@ -171,11 +171,38 @@
       }
     });
 
+    var embeddedMessagingApiReady = false;
+
     window.addEventListener('onEmbeddedMessagingReady', function () {
+      embeddedMessagingApiReady = true;
       embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
         Idioma: salesforceLanguage
       });
     });
+
+    function clearEmbeddedMessagingSessionAndNavigate(url) {
+      if (
+        !embeddedMessagingApiReady ||
+        typeof embeddedservice_bootstrap === 'undefined' ||
+        !embeddedservice_bootstrap.userVerificationAPI
+      ) {
+        window.location.assign(url);
+        return;
+      }
+      embeddedservice_bootstrap.userVerificationAPI
+        .clearSession(true)
+        .catch(function (err) {
+          console.error('Error clearing Embedded Messaging session:', err);
+        })
+        .finally(function () {
+          try {
+            embeddedservice_bootstrap.utilAPI.removeAllComponents();
+          } catch (err) {
+            console.error('Error removing Embedded Messaging components:', err);
+          }
+          window.location.assign(url);
+        });
+    }
 
     var languageSelect = document.getElementById('language-select');
     languageSelect.value = selectedLanguage;
@@ -186,7 +213,7 @@
     var chatSelect = document.getElementById('chat-select');
     chatSelect.value = selectedChat;
     chatSelect.addEventListener('change', function () {
-      window.location.href = buildUrl({ chat: chatSelect.value });
+      clearEmbeddedMessagingSessionAndNavigate(buildUrl({ chat: chatSelect.value }));
     });
 
     window.addEventListener('onEmbeddedMessageSent', function () {
@@ -200,6 +227,7 @@
       try {
         embeddedservice_bootstrap.settings.language = salesforceLanguage;
         embeddedservice_bootstrap.settings.useHostSiteLanguage = true;
+        embeddedservice_bootstrap.settings.restrictSessionOnMessagingChannel = true;
         embeddedservice_bootstrap.init(
           ORG_ID,
           deployment.developerName,
