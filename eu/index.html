@@ -88,6 +88,22 @@
     var DEFAULT_CHAT = 'familias';
     var SCRT2_URL = 'https://zuzenean--pre.sandbox.my.salesforce-scrt.com';
     var ORG_ID = '00DS800000DPelu';
+    var ESW_BROWSER_STORAGE_KEY = ORG_ID + '_CWC_WEB_STORAGE';
+    var ESW_FORCE_CLEAN_START_KEY = 'eswForceCleanStart';
+
+    function purgeEmbeddedMessagingBrowserStorage() {
+      try {
+        localStorage.removeItem(ESW_BROWSER_STORAGE_KEY);
+        sessionStorage.removeItem(ESW_BROWSER_STORAGE_KEY);
+      } catch (err) {
+        console.error('Error purging Embedded Messaging browser storage:', err);
+      }
+    }
+
+    if (sessionStorage.getItem(ESW_FORCE_CLEAN_START_KEY) === '1') {
+      sessionStorage.removeItem(ESW_FORCE_CLEAN_START_KEY);
+      purgeEmbeddedMessagingBrowserStorage();
+    }
 
     var CHAT_DEPLOYMENTS = {
       familias: {
@@ -180,13 +196,23 @@
       });
     });
 
+    function finishEmbeddedMessagingNavigation(url) {
+      purgeEmbeddedMessagingBrowserStorage();
+      try {
+        sessionStorage.setItem(ESW_FORCE_CLEAN_START_KEY, '1');
+      } catch (err) {
+        console.error('Error marking Embedded Messaging clean start:', err);
+      }
+      window.location.assign(url);
+    }
+
     function clearEmbeddedMessagingSessionAndNavigate(url) {
       if (
         !embeddedMessagingApiReady ||
         typeof embeddedservice_bootstrap === 'undefined' ||
         !embeddedservice_bootstrap.userVerificationAPI
       ) {
-        window.location.assign(url);
+        finishEmbeddedMessagingNavigation(url);
         return;
       }
       embeddedservice_bootstrap.userVerificationAPI
@@ -200,14 +226,14 @@
           } catch (err) {
             console.error('Error removing Embedded Messaging components:', err);
           }
-          window.location.assign(url);
+          finishEmbeddedMessagingNavigation(url);
         });
     }
 
     var languageSelect = document.getElementById('language-select');
     languageSelect.value = selectedLanguage;
     languageSelect.addEventListener('change', function () {
-      window.location.href = buildUrl({ language: languageSelect.value });
+      clearEmbeddedMessagingSessionAndNavigate(buildUrl({ language: languageSelect.value }));
     });
 
     var chatSelect = document.getElementById('chat-select');
