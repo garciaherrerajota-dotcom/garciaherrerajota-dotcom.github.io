@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba chat - Medioambiente</title>
+</head>
+<body>
+  <h1>Prueba chat: Medioambiente</h1>
+
+  <script>
+    function initEmbeddedMessaging() {
+      embeddedservice_bootstrap.settings.language = 'es';
+      embeddedservice_bootstrap.init(
+        '00DS800000DPelu',
+        'Webchat_Medioambiente',
+        'https://zuzenean--pre.sandbox.my.site.com/ESWWebchatMedioa1792138532538',
+        { scrt2URL: 'https://zuzenean--pre.sandbox.my.salesforce-scrt.com' }
+      );
+    }
+  </script>
+  <script
+    src="https://zuzenean--pre.sandbox.my.site.com/ESWWebchatMedioa1792138532538/assets/js/bootstrap.min.js"
+    onload="initEmbeddedMessaging()"></script>
+</body>
+</html>
